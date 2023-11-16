@@ -14,21 +14,14 @@ import java.util.Date
 import java.util.Timer
 import java.util.TimerTask
 
-import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.util.Calendar
 
-//import android.app.Service
-//import android.content.Intent
-//import android.os.IBinder
-//import io.flutter.plugin.common.MethodChannel
-//import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-//import io.flutter.plugin.common.MethodCall
-//import io.flutter.plugin.common.MethodChannel.Result
 import android.os.Handler
 import android.os.Looper
+import java.util.Locale
 
 class CountdownKotlinService : Service() {
     private var eventSink: EventChannel.EventSink? = null
@@ -64,7 +57,6 @@ class CountdownKotlinService : Service() {
                 when (call.method) {
                     "startCountdown" -> {
                         val data = call.arguments as String;
-                        println(data)
                         startCountdown(data)
                         result.success(null)
                     }
@@ -93,18 +85,15 @@ class CountdownKotlinService : Service() {
     }
 
     private fun sendEventToFlutter(message: String) {
-//        eventSink?.success(message)
         mainHandler.post {
             eventSink?.success(message)
         }
     }
 
-    private fun startCountdown(date: String?) {
+    private fun startCountdown(date: String) {
         timer = Timer()
         timer!!.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-//                val countdownMillis = calculateNextBirthdayCountdown(this@CountdownKotlinService)
-//                showNotification(countdownMillis)
 
                 val countdownMillis = calculateNextBirthdayCountdown(date)
                 sendEventToFlutter(countdownMillis.toString())
@@ -153,53 +142,30 @@ class CountdownKotlinService : Service() {
         notificationManager.notify(1, notification)
     }
 
-    private fun calculateNextBirthdayCountdown(date: String?): Long {
+    private fun calculateNextBirthdayCountdown(date: String): Long {
         println(date);
 
-//        val sharedPreferences: SharedPreferences =
-//            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-
-        // Retrieve the birthday in milliseconds from SharedPreferences
-        val birthdayMillis = convertDateStringToMillis(date)//sharedPreferences.getLong(KEY_BIRTHDAY, 0)
-
-//        println(sharedPreferences.getString(KEY_BIRTHDAY, KEY_BIRTHDAY));
-
-        // If the birthday is not set, return a large value indicating no countdown
-        if (birthdayMillis == 0L) {
-            return Long.MAX_VALUE
-        }
-
-        val currentTimeMillis = System.currentTimeMillis()
-
         // Calculate the time until the next birthday
-        return calculateTimeUntilNextBirthday(currentTimeMillis, birthdayMillis)
+        return calculateTimeUntilNextBirthday(date)
     }
 
-    private fun calculateTimeUntilNextBirthday(currentTimeMillis: Long, birthdayMillis: Long): Long {
-        val currentCalendar = Calendar.getInstance().apply {
-            timeInMillis = currentTimeMillis
-        }
+    private fun calculateTimeUntilNextBirthday(birthdayDate: String): Long {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val today = Calendar.getInstance()
+        val birthday = Calendar.getInstance()
 
-        val birthdayCalendar = Calendar.getInstance().apply {
-            timeInMillis = birthdayMillis
-        }
+        val currentYear = today.get(Calendar.YEAR)
 
-        // Set the year of the birthday calendar to the current year
-        birthdayCalendar.set(Calendar.YEAR, currentCalendar.get(Calendar.YEAR))
+        // Set the birthday date to the current year
+        birthday.time = dateFormat.parse("$birthdayDate/$currentYear")!!
 
-        // If the birthday has already occurred this year, set it to the next year
-        if (currentCalendar.after(birthdayCalendar)) {
-            birthdayCalendar.add(Calendar.YEAR, 1)
+        // If the birthday has already passed this year, set it to the next year
+        if (today.after(birthday)) {
+            birthday.set(Calendar.YEAR, currentYear + 1)
         }
 
         // Calculate the time until the next birthday
-        return birthdayCalendar.timeInMillis - currentTimeMillis
-    }
-
-    private fun convertDateStringToMillis(dateString: String?): Long {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-        val date = dateFormat.parse(dateString)
-        return date?.time ?: 0L
+        return birthday.timeInMillis - today.timeInMillis
     }
 
     override fun onDestroy() {

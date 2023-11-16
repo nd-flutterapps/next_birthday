@@ -81,13 +81,6 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
 
   @override
   Widget build(BuildContext context) {
-    int days = currentTime!.days;
-    int hours = currentTime.days;
-    int mins = currentTime.minutes;
-    int secs = currentTime.seconds;
-
-    int elasped = 90;
-
     return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
@@ -123,55 +116,64 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                  elasped == 0
-                      ? Center(
-                          child: Column(children: [
-                          const Text(
-                            "🎉🎉🎉",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 50,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const Text(
-                            "Hooray!!, It's your birthday.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 50,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 30,
-                          ),
-                          ElevatedButton(
-                              // style: const ButtonStyle(
-                              //     backgroundColor: Colors.white),
-                              onPressed: () {
-                                _showConfirmationDialog(context);
-                              },
-                              child: const Text(
-                                "Restart",
-                                style: TextStyle(color: Colors.black),
-                              ))
-                        ]))
-                      : displayTime(currentTime),
-                ])),
+                    children: [checkTimeElapsed()])),
           ],
         ));
   }
 
-  Widget displayTime(ParsedTime _currentTime) {
-    int days = _currentTime.days;
-    int hours = _currentTime.days;
-    int mins = _currentTime.minutes;
-    int secs = _currentTime.seconds;
-
+  Widget checkTimeElapsed() {
     if (!isCurrentTimeInitialized) {
       return const CircularProgressIndicator();
     }
+
+    int days = currentTime.days;
+    int hours = currentTime.hours;
+    int mins = currentTime.minutes;
+    int secs = currentTime.seconds;
+
+    int elapsed = days + hours + mins + secs;
+
+    return elapsed <= 0
+        ? Center(
+            child: Column(children: [
+            const Text(
+              "🎉🎉🎉",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 50,
+                color: Colors.white,
+              ),
+            ),
+            const Text(
+              "Hooray!!, It's your birthday.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 50,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            ElevatedButton(
+                // style: const ButtonStyle(
+                //     backgroundColor: Colors.white),
+                onPressed: () {
+                  _showConfirmationDialog(context);
+                },
+                child: const Text(
+                  "Restart",
+                  style: TextStyle(color: Colors.black),
+                ))
+          ]))
+        : displayTime(currentTime);
+  }
+
+  Widget displayTime(ParsedTime _currentTime) {
+    int days = _currentTime.days;
+    int hours = _currentTime.hours;
+    int mins = _currentTime.minutes;
+    int secs = _currentTime.seconds;
 
     return Table(
       children: [
