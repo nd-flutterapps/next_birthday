@@ -7,7 +7,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.example/background_service"
+    private val CHANNEL = "com.chidumennamdi/background_service"
 
     companion object {
         var sharedFlutterEngine: FlutterEngine? = null

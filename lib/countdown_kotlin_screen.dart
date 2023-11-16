@@ -31,7 +31,10 @@ class ParsedTime {
 class _BirthdayCountdownState extends State<CountdownKotlinPage> {
   late ParsedTime currentTime;
   bool isCurrentTimeInitialized = false;
-  final streamEventChannel = const EventChannel('com.example/stream_channel');
+  final streamEventChannel =
+      const EventChannel('com.chidumennamdi/stream_channel');
+  final startCountdownChannel =
+      const MethodChannel("com.chidumennamdi/countdown");
 
   ParsedTime parseMillisToTime(int millis) {
     // Calculate days, hours, minutes, and seconds
@@ -243,6 +246,8 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
                     await SharedPreferences.getInstance();
                 await prefs.remove('_birthday');
 
+                startCountdownChannel.invokeMethod("stopCountdown");
+
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
                     builder: (context) => const MyHomePage(),
@@ -263,6 +268,8 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
   void reStart() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('_birthday');
+
+    startCountdownChannel.invokeMethod("stopCountdown");
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(

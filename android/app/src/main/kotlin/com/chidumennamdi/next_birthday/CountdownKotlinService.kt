@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.icu.text.CaseMap.Title
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -49,7 +50,7 @@ class CountdownKotlinService : Service() {
     }
 
     private fun initializeMethodChannel(messenger: BinaryMessenger) {
-        val CHANNEL_NAME = "com.example/start_countdown"
+        val CHANNEL_NAME = "com.chidumennamdi/countdown"
         println("initializeMethodChannel")
 
         methodChannel = MethodChannel(messenger, CHANNEL_NAME).apply {
@@ -59,6 +60,10 @@ class CountdownKotlinService : Service() {
                         val data = call.arguments as String;
                         startCountdown(data)
                         result.success(null)
+                    }
+                    "stopCountdown" -> {
+                        stopCountdown()
+                        showNotification("", "Countdown stopped")
                     }
                     else -> {
                         result.notImplemented()
@@ -71,7 +76,7 @@ class CountdownKotlinService : Service() {
     private fun initializeEventChannel(messenger: BinaryMessenger) {
         println("initializeEventChannel")
         // Set up EventChannel
-        eventChannel = EventChannel(messenger, "com.example/stream_channel").apply {
+        eventChannel = EventChannel(messenger, "com.chidumennamdi/stream_channel").apply {
             setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                     eventSink = events
@@ -91,11 +96,20 @@ class CountdownKotlinService : Service() {
     }
 
     private fun startCountdown(date: String) {
+        showCountDownNotif(calculateNextBirthdayCountdown(date));
+
         timer = Timer()
         timer!!.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
 
                 val countdownMillis = calculateNextBirthdayCountdown(date)
+
+                if (countdownMillis <= 0) {
+                    println("Birthday countdown is done!")
+                    showCountDownDoneNotif()
+                    // You can perform any actions or trigger events when the countdown is done
+                }
+
                 sendEventToFlutter(countdownMillis.toString())
 
             }
@@ -103,7 +117,18 @@ class CountdownKotlinService : Service() {
 
     }
 
-    private fun showNotification(countdownMillis: Long) {
+    private fun showCountDownNotif(countdownMillis: Long) {
+        // Format the countdown into days, hours, minutes, and seconds
+        val formatter = SimpleDateFormat("dd:HH:mm:ss")
+        val formattedCountdown = formatter.format(Date(countdownMillis))
+        showNotification("Birthday Countdown", "Next birthday in: $formattedCountdown")
+    }
+
+    private fun showCountDownDoneNotif() {
+        showNotification("Birthday Countdown","Birthday countdown is done!")
+    }
+
+    private fun showNotification(title: String, body: String) {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -126,14 +151,11 @@ class CountdownKotlinService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        // Format the countdown into days, hours, minutes, and seconds
-        val formatter = SimpleDateFormat("dd:HH:mm:ss")
-        val formattedCountdown = formatter.format(Date(countdownMillis))
 
         // Build the notification
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Birthday Countdown")
-            .setContentText("Next birthday in: $formattedCountdown")
+            .setContentTitle(title)
+            .setContentText(body)
             .setSmallIcon(R.drawable.launch_background)
             .setContentIntent(pendingIntent)
             .build()
@@ -166,6 +188,10 @@ class CountdownKotlinService : Service() {
 
         // Calculate the time until the next birthday
         return birthday.timeInMillis - today.timeInMillis
+    }
+
+    private fun stopCountdown() {
+        timer?.cancel();
     }
 
     override fun onDestroy() {

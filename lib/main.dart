@@ -50,22 +50,14 @@ class _MyHomePageState extends State<MyHomePage> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   late Future<String> _birthday;
   final MethodChannel platform =
-      const MethodChannel('com.example/background_service');
+      const MethodChannel('com.chidumennamdi/background_service');
 
   final startCountdownChannel =
-      const MethodChannel("com.example/start_countdown");
+      const MethodChannel("com.chidumennamdi/countdown");
 
   @override
   void initState() {
     super.initState();
-
-    // startBackgroundService();
-    // print("Flutter: startBackgroundService");
-    //
-    // eventChannel.receiveBroadcastStream().listen((dynamic data) {
-    //   print("In Flutter: ");
-    //   print(data);
-    // });
 
     startBackgroundService().then((_) {
       print("Flutter: startBackgroundService");
@@ -83,17 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void start() async {
-    // try {
-    //   streamEventChannel.receiveBroadcastStream().listen((dynamic data) {
-    //     print("In Flutter: ");
-    //     print(data);
-    //   });
-    //   startCountdownChannel.invokeMethod("startCountdown", "09/12/2023");
-    // } catch (e) {
-    //   print("Error: $e");
-    // }
-    // return;
-
     if (dateController.text.isEmpty) {
       return;
     }
