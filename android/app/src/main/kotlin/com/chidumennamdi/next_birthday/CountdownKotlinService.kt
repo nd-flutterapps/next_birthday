@@ -28,8 +28,6 @@ class CountdownKotlinService : Service() {
     private var eventSink: EventChannel.EventSink? = null
     private var timer: Timer? = null
     private val CHANNEL_ID = "BirthdayChannel"
-    private val PREF_NAME = "com.chidumennamdi.next_birthday"
-    private val KEY_BIRTHDAY = "_birthday"
 
     private var eventChannel: EventChannel? = null
     private var methodChannel: MethodChannel? = null
