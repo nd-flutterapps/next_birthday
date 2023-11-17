@@ -88,3 +88,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+  fonts:
+    - family: AlfaSlabOne-Regular
+      fonts:
+        - asset: fonts/AlfaSlabOne-Regular.ttf
+        - asset: fonts/AlfaSlabOne-Regular.ttf
+          style: normal
+        - asset: fonts/AlfaSlabOne-Regular.ttf
+          weight: 700

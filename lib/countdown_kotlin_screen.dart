@@ -28,7 +28,8 @@ class ParsedTime {
       required this.seconds});
 }
 
-class _BirthdayCountdownState extends State<CountdownKotlinPage> {
+class _BirthdayCountdownState extends State<CountdownKotlinPage>
+    with WidgetsBindingObserver {
   late ParsedTime currentTime;
   bool isCurrentTimeInitialized = false;
   final streamEventChannel =
@@ -60,12 +61,8 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
   void initKotlin() {
     try {
       streamEventChannel.receiveBroadcastStream().listen((dynamic data) {
-        print("In Flutter: ");
-        print(data);
-
         ParsedTime parsedTime = parseMillisToTime(int.parse(data));
 
-        print(parsedTime);
         setState(() {
           currentTime = parsedTime;
           isCurrentTimeInitialized = true;
@@ -78,8 +75,12 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
 
   @override
   void initState() {
-    super.initState();
     initKotlin();
+    startCountdownChannel.invokeMethod(
+        'startCountdown', getFormattedDateFromDatetime());
+
+    WidgetsBinding.instance?.addObserver(this);
+    super.initState();
   }
 
   @override
@@ -95,6 +96,7 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
             style: TextStyle(
               color: Colors.white,
               fontSize: 20,
+              fontFamily: "AlfaSlabOne-Regular",
             ),
           ),
           actions: [
@@ -106,8 +108,8 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
                 "Reset",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 25,
-                  fontFamily: "Roboto",
+                  fontSize: 15,
+                  fontFamily: "AlfaSlabOne-Regular",
                 ),
               ),
             )
@@ -151,9 +153,9 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
               "Hooray!!, It's your birthday.",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 50,
-                color: Colors.white,
-              ),
+                  fontSize: 50,
+                  color: Colors.white,
+                  fontFamily: "AlfaSlabOne-Regular"),
             ),
             const SizedBox(
               height: 30,
@@ -166,7 +168,8 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
                 },
                 child: const Text(
                   "Restart",
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(
+                      color: Colors.black, fontFamily: "AlfaSlabOne-Regular"),
                 ))
           ]))
         : displayTime(currentTime);
@@ -197,10 +200,10 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
           child: Text(
             '$timeValue',
             style: const TextStyle(
-              fontSize: 80,
-              color: Colors.white,
-              decoration: TextDecoration.none,
-            ),
+                fontSize: 80,
+                color: Colors.white,
+                decoration: TextDecoration.none,
+                fontFamily: "AlfaSlabOne-Regular"),
             textAlign: TextAlign.end,
           ),
         ),
@@ -213,10 +216,10 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
             child: Text(
               unit,
               style: const TextStyle(
-                fontSize: 20,
-                color: Colors.white,
-                decoration: TextDecoration.none,
-              ),
+                  fontSize: 20,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                  fontFamily: "AlfaSlabOne-Regular"),
             )),
       ),
     ]);
@@ -276,5 +279,43 @@ class _BirthdayCountdownState extends State<CountdownKotlinPage> {
         builder: (context) => const MyHomePage(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
+    super.dispose();
+  }
+
+  String getFormattedDateFromDatetime() {
+    DateTime birthdate = widget.birthdate;
+    String formattedDate =
+        '${birthdate.year}-${birthdate.month}-${birthdate.day}';
+    return formattedDate;
+  }
+
+  void startBackgroundServiceAndCountdown() {
+    String formattedDate = getFormattedDateFromDatetime();
+
+    MethodChannel backgroundServiceChannel =
+        const MethodChannel('com.chidumennamdi/background_service');
+    MethodChannel startCountdownChannel =
+        const MethodChannel('com.example/start_countdown');
+
+    backgroundServiceChannel
+        .invokeMethod('startBackgroundService')
+        .then((value) {
+      startCountdownChannel.invokeMethod('startCountdown', formattedDate);
+      initKotlin(); // Assuming initKotlin is a function you want to call after starting the background service and countdown.
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App has resumed, re-establish communication with the background service.
+      // Call your method to reconnect or resend necessary data.
+      startBackgroundServiceAndCountdown();
+    }
   }
 }

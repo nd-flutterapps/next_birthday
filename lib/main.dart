@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'countdown_kotlin_screen.dart';
-import 'countdown_screen.dart';
 
 Future<void> main() async {
   runApp(const MyApp());
@@ -113,7 +112,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         leading: Container(), // Remove any leading widget
                         title: Text(
                           widget.title,
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontFamily: "AlfaSlabOne-Regular",
+                          ),
                         ),
                       ),
                       body: Center(
@@ -124,7 +126,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               TextField(
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: "AlfaSlabOne-Regular",
+                                  ),
                                   controller:
                                       dateController, //editing controller of this TextField
                                   decoration: const InputDecoration(
@@ -190,7 +195,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   },
                                   child: const Text(
                                     'Start',
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: "AlfaSlabOne-Regular",
+                                    ),
                                   ))
                             ],
                           ),
@@ -199,7 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       );
                 }
 
-                return CountdownPage(birthdate: DateTime.parse(value!));
+                return CountdownKotlinPage(birthdate: DateTime.parse(value!));
               }
           }
         });
